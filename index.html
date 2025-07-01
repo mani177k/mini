@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Threat Detection Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-card h3 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-safe { background: #00ff88; }
+        .status-warning { background: #ffaa00; }
+        .status-danger { background: #ff4444; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover:before {
+            left: 100%;
+        }
+
+        .threat-log {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .threat-log h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            animation: slideIn 0.5s ease;
+        }
+
+        .log-entry.high { border-left-color: #ff4444; }
+        .log-entry.medium { border-left-color: #ffaa00; }
+        .log-entry.low { border-left-color: #00ff88; }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .log-time {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .threat-type {
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .network-monitor {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .monitor-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4ecdc4;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .network-monitor { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Cyber Threat Detection System</h1>
+            <p>Real-time monitoring and threat analysis dashboard</p>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>System Status</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="systemStatus"></div>
+                    <span id="systemStatusText">All Systems Operational</span>
+                </div>
+                <p>Last scan: <span id="lastScan">--</span></p>
+            </div>
+
+            <div class="status-card">
+                <h3>Malware Detection</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="malwareStatus"></div>
+                    <span id="malwareStatusText">No Threats Detected</span>
+                </div>
+                <p>Files scanned: <span id="filesScanned">0</span></p>
+            </div>
+
+            <div class="status-card">
+                <h3>Network Security</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="networkStatus"></div>
+                    <span id="networkStatusText">Network Secure</span>
+                </div>
+                <p>Active connections: <span id="activeConnections">0</span></p>
+            </div>
+
+            <div class="status-card">
+                <h3>Firewall Status</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="firewallStatus"></div>
+                    <span id="firewallStatusText">Firewall Active</span>
+                </div>
+                <p>Blocked attempts: <span id="blockedAttempts">0</span></p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="startFullScan()">
+                <span id="scanBtn">🔍 Start Full Scan</span>
+            </button>
+            <button class="btn" onclick="updateThreats()">
+                📊 Update Threat Database
+            </button>
+            <button class="btn" onclick="generateReport()">
+                📋 Generate Report
+            </button>
+            <button class="btn" onclick="clearLogs()">
+                🗑️ Clear Logs
+            </button>
+        </div>
+
+        <div class="threat-log">
+            <h3>🚨 Threat Detection Log</h3>
+            <div id="threatLog">
+                <p style="color: #888; text-align: center;">No threats detected. System is secure.</p>
+            </div>
+        </div>
+
+        <div class="network-monitor">
+            <div class="monitor-card">
+                <h3>📡 Network Monitoring</h3>
+                <div class="metric">
+                    <span>Bandwidth Usage:</span>
+                    <span class="metric-value" id="bandwidth">0 MB/s</span>
+                </div>
+                <div class="metric">
+                    <span>Suspicious IPs:</span>
+                    <span class="metric-value" id="suspiciousIPs">0</span>
+                </div>
+                <div class="metric">
+                    <span>DDoS Attempts:</span>
+                    <span class="metric-value" id="ddosAttempts">0</span>
+                </div>
+                <div class="metric">
+                    <span>Port Scans:</span>
+                    <span class="metric-value" id="portScans">0</span>
+                </div>
+            </div>
+            
+            <div class="monitor-card">
+                <h3>🔒 Security Metrics</h3>
+                <div class="metric">
+                    <span>Failed Logins:</span>
+                    <span class="metric-value" id="failedLogins">0</span>
+                </div>
+                <div class="metric">
+                    <span>Brute Force Attempts:</span>
+                    <span class="metric-value" id="bruteForce">0</span>
+                </div>
+                <div class="metric">
+                    <span>SQL Injection Attempts:</span>
+                    <span class="metric-value" id="sqlInjection">0</span>
+                </div>
+                <div class="metric">
+                    <span>XSS Attempts:</span>
+                    <span class="metric-value" id="xssAttempts">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ThreatDetector {
+            constructor() {
+                this.scanning = false;
+                this.threats = [];
+                this.metrics = {
+                    filesScanned: 0,
+                    activeConnections: Math.floor(Math.random() * 50) + 10,
+                    blockedAttempts: 0,
+                    bandwidth: 0,
+                    suspiciousIPs: 0,
+                    ddosAttempts: 0,
+                    portScans: 0,
+                    failedLogins: 0,
+                    bruteForce: 0,
+                    sqlInjection: 0,
+                    xssAttempts: 0
+                };
+                this.init();
+            }
+
+            init() {
+                this.updateLastScan();
+                this.startMonitoring();
+                this.simulateNetworkActivity();
+            }
+
+            updateLastScan() {
+                const now = new Date();
+                document.getElementById('lastScan').textContent = now.toLocaleTimeString();
+            }
+
+            startFullScan() {
+                if (this.scanning) return;
+                
+                this.scanning = true;
+                const scanBtn = document.getElementById('scanBtn');
+                scanBtn.innerHTML = '<div class="loading"></div> Scanning...';
+                
+                this.updateStatus('systemStatus', 'warning', 'Scanning in Progress...');
+                
+                // Simulate scanning process
+                let progress = 0;
+                const scanInterval = setInterval(() => {
+                    progress += Math.random() * 20;
+                    this.metrics.filesScanned = Math.floor(progress * 10);
+                    document.getElementById('filesScanned').textContent = this.metrics.filesScanned;
+                    
+                    if (progress >= 100) {
+                        clearInterval(scanInterval);
+                        this.completeScan();
+                    }
+                }, 500);
+            }
+
+            completeScan() {
+                this.scanning = false;
+                document.getElementById('scanBtn').innerHTML = '🔍 Start Full Scan';
+                this.updateStatus('systemStatus', 'safe', 'Scan Complete - System Secure');
+                this.updateLastScan();
+                
+                // Randomly generate some threats
+                if (Math.random() > 0.7) {
+                    this.generateRandomThreat();
+                }
+            }
+
+            generateRandomThreat() {
+                const threatTypes = [
+                    { type: 'Malware', desc: 'Suspicious file detected', severity: 'high' },
+                    { type: 'Phishing', desc: 'Phishing attempt blocked', severity: 'medium' },
+                    { type: 'Port Scan', desc: 'Unauthorized port scanning detected', severity: 'low' },
+                    { type: 'DDoS', desc: 'Distributed denial of service attempt', severity: 'high' },
+                    { type: 'SQL Injection', desc: 'SQL injection attempt detected', severity: 'medium' },
+                    { type: 'XSS Attack', desc: 'Cross-site scripting attempt blocked', severity: 'medium' },
+                    { type: 'Brute Force', desc: 'Brute force login attempt detected', severity: 'high' }
+                ];
+
+                const threat = threatTypes[Math.floor(Math.random() * threatTypes.length)];
+                this.logThreat(threat.type, threat.desc, threat.severity);
+                this.updateMetrics(threat.type);
+            }
+
+            logThreat(type, description, severity) {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${severity}`;
+                logEntry.innerHTML = `
+                    <div class="threat-type">${type}</div>
+                    <div>${description}</div>
+                    <div class="log-time">${new Date().toLocaleString()}</div>
+                `;
+
+                const threatLog = document.getElementById('threatLog');
+                if (threatLog.children.length === 1 && threatLog.children[0].tagName === 'P') {
+                    threatLog.innerHTML = '';
+                }
+                
+                threatLog.insertBefore(logEntry, threatLog.firstChild);
+                
+                // Keep only last 10 entries
+                while (threatLog.children.length > 10) {
+                    threatLog.removeChild(threatLog.lastChild);
+                }
+
+                // Update status indicators
+                this.updateThreatStatus(type, severity);
+            }
+
+            updateThreatStatus(type, severity) {
+                if (type === 'Malware') {
+                    this.updateStatus('malwareStatus', severity === 'high' ? 'danger' : 'warning', 
+                                    severity === 'high' ? 'Malware Detected!' : 'Potential Threat');
+                } else if (type.includes('Network') || type === 'DDoS' || type === 'Port Scan') {
+                    this.updateStatus('networkStatus', severity === 'high' ? 'danger' : 'warning', 
+                                    severity === 'high' ? 'Network Under Attack' : 'Suspicious Activity');
+                }
+            }
+
+            updateStatus(elementId, status, text) {
+                const dot = document.getElementById(elementId);
+                const textElement = document.getElementById(elementId.replace('Status', 'StatusText'));
+                
+                dot.className = `status-dot status-${status}`;
+                textElement.textContent = text;
+            }
+
+            updateMetrics(threatType) {
+                switch(threatType) {
+                    case 'DDoS':
+                        this.metrics.ddosAttempts++;
+                        document.getElementById('ddosAttempts').textContent = this.metrics.ddosAttempts;
+                        break;
+                    case 'Port Scan':
+                        this.metrics.portScans++;
+                        document.getElementById('portScans').textContent = this.metrics.portScans;
+                        break;
+                    case 'Brute Force':
+                        this.metrics.bruteForce++;
+                        this.metrics.failedLogins += Math.floor(Math.random() * 5) + 1;
+                        document.getElementById('bruteForce').textContent = this.metrics.bruteForce;
+                        document.getElementById('failedLogins').textContent = this.metrics.failedLogins;
+                        break;
+                    case 'SQL Injection':
+                        this.metrics.sqlInjection++;
+                        document.getElementById('sqlInjection').textContent = this.metrics.sqlInjection;
+                        break;
+                    case 'XSS Attack':
+                        this.metrics.xssAttempts++;
+                        document.getElementById('xssAttempts').textContent = this.metrics.xssAttempts;
+                        break;
+                }
+                
+                this.metrics.blockedAttempts++;
+                document.getElementById('blockedAttempts').textContent = this.metrics.blockedAttempts;
+            }
+
+            simulateNetworkActivity() {
+                setInterval(() => {
+                    // Simulate bandwidth usage
+                    this.metrics.bandwidth = (Math.random() * 100).toFixed(1);
+                    document.getElementById('bandwidth').textContent = this.metrics.bandwidth + ' MB/s';
+                    
+                    // Occasionally add suspicious IPs
+                    if (Math.random() > 0.9) {
+                        this.metrics.suspiciousIPs++;
+                        document.getElementById('suspiciousIPs').textContent = this.metrics.suspiciousIPs;
+                    }
+                    
+                    // Update active connections
+                    this.metrics.activeConnections += Math.floor(Math.random() * 6) - 3;
+                    this.metrics.activeConnections = Math.max(1, this.metrics.activeConnections);
+                    document.getElementById('activeConnections').textContent = this.metrics.activeConnections;
+                }, 3000);
+            }
+
+            startMonitoring() {
+                // Simulate random threat detection
+                setInterval(() => {
+                    if (Math.random() > 0.85 && !this.scanning) {
+                        this.generateRandomThreat();
+                    }
+                }, 10000);
+            }
+
+            updateThreats() {
+                alert('Threat database updated successfully!\n\nNew signatures: 1,247\nUpdated rules: 89\nLast update: ' + new Date().toLocaleString());
+            }
+
+            generateReport() {
+                const report = `
+CYBERSECURITY THREAT REPORT
+Generated: ${new Date().toLocaleString()}
+
+SYSTEM STATUS:
+- Files Scanned: ${this.metrics.filesScanned}
+- Active Connections: ${this.metrics.activeConnections}
+- Blocked Attempts: ${this.metrics.blockedAttempts}
+
+THREAT METRICS:
+- DDoS Attempts: ${this.metrics.ddosAttempts}
+- Port Scans: ${this.metrics.portScans}
+- Brute Force Attempts: ${this.metrics.bruteForce}
+- Failed Logins: ${this.metrics.failedLogins}
+- SQL Injection Attempts: ${this.metrics.sqlInjection}
+- XSS Attempts: ${this.metrics.xssAttempts}
+
+NETWORK SECURITY:
+- Current Bandwidth: ${this.metrics.bandwidth} MB/s
+- Suspicious IPs: ${this.metrics.suspiciousIPs}
+
+RECOMMENDATIONS:
+- Regular system updates recommended
+- Monitor suspicious IP addresses
+- Implement stronger authentication methods
+- Enable advanced threat protection
+                `;
+                
+                alert(report);
+            }
+
+            clearLogs() {
+                document.getElementById('threatLog').innerHTML = 
+                    '<p style="color: #888; text-align: center;">No threats detected. System is secure.</p>';
+                
+                // Reset some metrics
+                this.metrics.suspiciousIPs = 0;
+                this.metrics.ddosAttempts = 0;
+                this.metrics.portScans = 0;
+                this.metrics.bruteForce = 0;
+                this.metrics.sqlInjection = 0;
+                this.metrics.xssAttempts = 0;
+                
+                // Update display
+                document.getElementById('suspiciousIPs').textContent = '0';
+                document.getElementById('ddosAttempts').textContent = '0';
+                document.getElementById('portScans').textContent = '0';
+                document.getElementById('bruteForce').textContent = '0';
+                document.getElementById('sqlInjection').textContent = '0';
+                document.getElementById('xssAttempts').textContent = '0';
+                
+                // Reset status indicators
+                this.updateStatus('malwareStatus', 'safe', 'No Threats Detected');
+                this.updateStatus('networkStatus', 'safe', 'Network Secure');
+            }
+        }
+
+        // Initialize the threat detector
+        const detector = new ThreatDetector();
+
+        // Global functions for buttons
+        function startFullScan() {
+            detector.startFullScan();
+        }
+
+        function updateThreats() {
+            detector.updateThreats();
+        }
+
+        function generateReport() {
+            detector.generateReport();
+        }
+
+        function clearLogs() {
+            detector.clearLogs();
+        }
+
+        // Simulate receiving threat data from backend
+        function fetchThreatsFromBackend() {
+            // This would typically make an AJAX call to your PHP backend
+            fetch('threat_detector.php?action=getThreats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.threats) {
+                        data.threats.forEach(threat => {
+                            detector.logThreat(threat.type, threat.description, threat.severity);
+                        });
+                    }
+                })
+                .catch(error => console.log('Backend connection not available'));
+        }
+
+        // Check for new threats every 30 seconds
+        setInterval(fetchThreatsFromBackend, 30000);
+    </script>
+</body>
+</html>
