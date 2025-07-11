@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Threat Detection Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Cyber Threat Detection System</h1>
+            <p>Real-time monitoring and threat analysis dashboard</p>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>System Status</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="systemStatus"></div>
+                    <span id="systemStatusText">All Systems Operational</span>
+                </div>
+                <p>Last scan: <span id="lastScan">--</span></p>
+            </div>
+
+            <div class="status-card">
+                <h3>Malware Detection</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="malwareStatus"></div>
+                    <span id="malwareStatusText">No Threats Detected</span>
+                </div>
+                <p>Files scanned: <span id="filesScanned">0</span></p>
+            </div>
+
+            <div class="status-card">
+                <h3>Network Security</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="networkStatus"></div>
+                    <span id="networkStatusText">Network Secure</span>
+                </div>
+                <p>Active connections: <span id="activeConnections">0</span></p>
+            </div>
+
+            <div class="status-card">
+                <h3>Firewall Status</h3>
+                <div class="status-indicator">
+                    <div class="status-dot status-safe" id="firewallStatus"></div>
+                    <span id="firewallStatusText">Firewall Active</span>
+                </div>
+                <p>Blocked attempts: <span id="blockedAttempts">0</span></p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="startFullScan()">
+                <span id="scanBtn">🔍 Start Full Scan</span>
+            </button>
+            <button class="btn" onclick="updateThreats()">
+                📊 Update Threat Database
+            </button>
+            <button class="btn" onclick="generateReport()">
+                📋 Generate Report
+            </button>
+            <button class="btn" onclick="clearLogs()">
+                🗑️ Clear Logs
+            </button>
+        </div>
+
+        <div class="threat-log">
+            <h3>🚨 Threat Detection Log</h3>
+            <div id="threatLog">
+                <p style="color: #888; text-align: center;">No threats detected. System is secure.</p>
+            </div>
+        </div>
+
+        <div class="network-monitor">
+            <div class="monitor-card">
+                <h3>📡 Network Monitoring</h3>
+                <div class="metric">
+                    <span>Bandwidth Usage:</span>
+                    <span class="metric-value" id="bandwidth">0 MB/s</span>
+                </div>
+                <div class="metric">
+                    <span>Suspicious IPs:</span>
+                    <span class="metric-value" id="suspiciousIPs">0</span>
+                </div>
+                <div class="metric">
+                    <span>DDoS Attempts:</span>
+                    <span class="metric-value" id="ddosAttempts">0</span>
+                </div>
+                <div class="metric">
+                    <span>Port Scans:</span>
+                    <span class="metric-value" id="portScans">0</span>
+                </div>
+            </div>
+            
+            <div class="monitor-card">
+                <h3>🔒 Security Metrics</h3>
+                <div class="metric">
+                    <span>Failed Logins:</span>
+                    <span class="metric-value" id="failedLogins">0</span>
+                </div>
+                <div class="metric">
+                    <span>Brute Force Attempts:</span>
+                    <span class="metric-value" id="bruteForce">0</span>
+                </div>
+                <div class="metric">
+                    <span>SQL Injection Attempts:</span>
+                    <span class="metric-value" id="sqlInjection">0</span>
+                </div>
+                <div class="metric">
+                    <span>XSS Attempts:</span>
+                    <span class="metric-value" id="xssAttempts">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
